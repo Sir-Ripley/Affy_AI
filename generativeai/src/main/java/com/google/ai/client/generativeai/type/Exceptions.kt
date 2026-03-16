@@ -44,9 +44,16 @@ sealed class GoogleGenerativeAIException(message: String, cause: Throwable? = nu
             is com.google.ai.client.generativeai.common.InvalidAPIKeyException ->
               InvalidAPIKeyException(cause.message ?: "")
             is com.google.ai.client.generativeai.common.PromptBlockedException ->
-              PromptBlockedException(cause.response.toPublic(), cause.cause)
+              PromptBlockedException(
+                cause.response.toPublic(),
+                cause.message ?: "Prompt was blocked",
+                cause.cause,
+              )
             is com.google.ai.client.generativeai.common.UnsupportedUserLocationException ->
-              UnsupportedUserLocationException(cause.cause)
+              UnsupportedUserLocationException(
+                cause.message ?: "User location is not supported for the API use.",
+                cause.cause,
+              )
             is com.google.ai.client.generativeai.common.InvalidStateException ->
               InvalidStateException(cause.message ?: "", cause)
             is com.google.ai.client.generativeai.common.ResponseStoppedException ->
@@ -85,12 +92,20 @@ class InvalidAPIKeyException(message: String, cause: Throwable? = null) :
  *
  * @property response the full server response for the request.
  */
-// TODO(rlazo): Add secondary constructor to pass through the message?
-class PromptBlockedException(val response: GenerateContentResponse, cause: Throwable? = null) :
-  GoogleGenerativeAIException(
+class PromptBlockedException(
+  val response: GenerateContentResponse,
+  message: String,
+  cause: Throwable? = null,
+) : GoogleGenerativeAIException(message, cause) {
+  constructor(
+    response: GenerateContentResponse,
+    cause: Throwable? = null,
+  ) : this(
+    response,
     "Prompt was blocked: ${response.promptFeedback?.blockReason?.name}",
     cause,
   )
+}
 
 /**
  * The user's location (region) is not supported by the API.
@@ -99,9 +114,10 @@ class PromptBlockedException(val response: GenerateContentResponse, cause: Throw
  * [list of regions](https://ai.google.dev/available_regions#available_regions) (countries and
  * territories) where the API is available.
  */
-// TODO(rlazo): Add secondary constructor to pass through the message?
-class UnsupportedUserLocationException(cause: Throwable? = null) :
-  GoogleGenerativeAIException("User location is not supported for the API use.", cause)
+class UnsupportedUserLocationException(message: String, cause: Throwable? = null) :
+  GoogleGenerativeAIException(message, cause) {
+  constructor(cause: Throwable? = null) : this("User location is not supported for the API use.", cause)
+}
 
 /**
  * Some form of state occurred that shouldn't have.
