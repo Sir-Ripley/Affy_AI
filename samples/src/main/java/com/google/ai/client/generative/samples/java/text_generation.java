@@ -310,15 +310,89 @@ class TextGeneration {
     // [END text_gen_multimodal_multi_image_prompt_streaming]
   }
 
-  void TextGenMultimodalVideoPrompt() {
+  void TextGenMultimodalVideoPrompt(String videoUri) {
     // [START text_gen_multimodal_video_prompt]
-    // TODO
+    // Specify a Gemini model appropriate for your use case
+    GenerativeModel gm =
+        new GenerativeModel(
+            /* modelName */ "gemini-1.5-flash",
+            // Access your API key as a Build Configuration variable (see "Set up your API key"
+            // above)
+            /* apiKey */ BuildConfig.apiKey);
+    GenerativeModelFutures model = GenerativeModelFutures.from(gm);
+
+    Content content =
+        new Content.Builder()
+            .addFileData(videoUri, "video/mp4")
+            .addText("What's in the video?")
+            .build();
+
+    // For illustrative purposes only. You should use an executor that fits your needs.
+    Executor executor = Executors.newSingleThreadExecutor();
+
+    ListenableFuture<GenerateContentResponse> response = model.generateContent(content);
+    Futures.addCallback(
+        response,
+        new FutureCallback<GenerateContentResponse>() {
+          @Override
+          public void onSuccess(GenerateContentResponse result) {
+            String resultText = result.getText();
+            System.out.println(resultText);
+          }
+
+          @Override
+          public void onFailure(Throwable t) {
+            t.printStackTrace();
+          }
+        },
+        executor);
     // [END text_gen_multimodal_video_prompt]
   }
 
-  void TextGenMultimodalVideoPromptStreaming() {
+  void TextGenMultimodalVideoPromptStreaming(String videoUri) {
     // [START text_gen_multimodal_video_prompt_streaming]
-    // TODO
+    // Specify a Gemini model appropriate for your use case
+    GenerativeModel gm =
+        new GenerativeModel(
+            /* modelName */ "gemini-1.5-flash",
+            // Access your API key as a Build Configuration variable (see "Set up your API key"
+            // above)
+            /* apiKey */ BuildConfig.apiKey);
+    GenerativeModelFutures model = GenerativeModelFutures.from(gm);
+
+    Content content =
+        new Content.Builder()
+            .addFileData(videoUri, "video/mp4")
+            .addText("What's in the video?")
+            .build();
+
+    Publisher<GenerateContentResponse> streamingResponse = model.generateContentStream(content);
+
+    StringBuilder outputContent = new StringBuilder();
+
+    streamingResponse.subscribe(
+        new Subscriber<GenerateContentResponse>() {
+          @Override
+          public void onNext(GenerateContentResponse generateContentResponse) {
+            String chunk = generateContentResponse.getText();
+            outputContent.append(chunk);
+          }
+
+          @Override
+          public void onComplete() {
+            System.out.println(outputContent);
+          }
+
+          @Override
+          public void onError(Throwable t) {
+            t.printStackTrace();
+          }
+
+          @Override
+          public void onSubscribe(Subscription s) {
+            s.request(Long.MAX_VALUE);
+          }
+        });
     // [END text_gen_multimodal_video_prompt_streaming]
   }
 }
