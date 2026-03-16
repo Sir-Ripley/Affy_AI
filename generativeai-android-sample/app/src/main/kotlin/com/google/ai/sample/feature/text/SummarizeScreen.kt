@@ -52,6 +52,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.ai.sample.GenerativeViewModelFactory
 import com.google.ai.sample.R
 import com.google.ai.sample.ui.theme.GenerativeAISample
+import com.halilibo.richtext.markdown.Markdown
+import com.halilibo.richtext.ui.material3.Material3RichText
 
 @Composable
 internal fun SummarizeRoute(
@@ -145,13 +147,15 @@ fun SummarizeScreen(
                                     drawCircle(color = Color.White)
                                 }
                         )
-                        Text(
-                            text = uiState.outputText, // TODO(thatfiredev): Figure out Markdown support
-                            color = MaterialTheme.colorScheme.onSecondary,
+                        Material3RichText(
                             modifier = Modifier
                                 .padding(start = 16.dp)
                                 .fillMaxWidth()
-                        )
+                        ) {
+                            Markdown(
+                                content = uiState.outputText
+                            )
+                        }
                     }
                 }
             }
