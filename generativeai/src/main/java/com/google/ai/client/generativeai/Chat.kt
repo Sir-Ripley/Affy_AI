@@ -102,8 +102,8 @@ class Chat(private val model: GenerativeModel, val history: MutableList<Content>
     val flow = model.generateContentStream(*history.toTypedArray(), prompt)
     // ⚡ Bolt: Using ArrayList instead of LinkedList for better cache locality and less memory
     // overhead
-    val bitmaps = ArrayList<Bitmap>()
-    val blobs = ArrayList<BlobPart>()
+    val bitmaps = mutableListOf<Bitmap>()
+    val blobs = mutableListOf<BlobPart>()
     val text = StringBuilder()
 
     /**
