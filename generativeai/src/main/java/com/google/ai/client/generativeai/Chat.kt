@@ -24,7 +24,6 @@ import com.google.ai.client.generativeai.type.ImagePart
 import com.google.ai.client.generativeai.type.InvalidStateException
 import com.google.ai.client.generativeai.type.TextPart
 import com.google.ai.client.generativeai.type.content
-import java.util.LinkedList
 import java.util.concurrent.Semaphore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
@@ -101,8 +100,10 @@ class Chat(private val model: GenerativeModel, val history: MutableList<Content>
     attemptLock()
 
     val flow = model.generateContentStream(*history.toTypedArray(), prompt)
-    val bitmaps = LinkedList<Bitmap>()
-    val blobs = LinkedList<BlobPart>()
+    // ⚡ Bolt: Using ArrayList instead of LinkedList for better cache locality and less memory
+    // overhead
+    val bitmaps = mutableListOf<Bitmap>()
+    val blobs = mutableListOf<BlobPart>()
     val text = StringBuilder()
 
     /**
