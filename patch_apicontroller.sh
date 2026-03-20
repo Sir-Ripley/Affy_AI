@@ -1,0 +1,15 @@
+cat << 'PATCH' > update.patch
+--- common/src/main/kotlin/com/google/ai/client/generativeai/common/APIController.kt
++++ common/src/main/kotlin/com/google/ai/client/generativeai/common/APIController.kt
+@@ -271,7 +271,7 @@
+   }
+   promptFeedback?.blockReason?.let { throw PromptBlockedException(this) }
+   candidates
+-    ?.mapNotNull { it.finishReason }
+-    ?.firstOrNull { it != FinishReason.STOP }
++    // ⚡ Bolt: Avoid intermediate list allocation from mapNotNull
++    ?.firstOrNull { it.finishReason != null && it.finishReason != FinishReason.STOP }
+     ?.let { throw ResponseStoppedException(this) }
+ }
+PATCH
+patch common/src/main/kotlin/com/google/ai/client/generativeai/common/APIController.kt update.patch

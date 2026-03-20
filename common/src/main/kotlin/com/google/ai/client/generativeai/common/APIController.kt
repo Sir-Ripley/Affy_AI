@@ -271,7 +271,7 @@ private fun GenerateContentResponse.validate() = apply {
   }
   promptFeedback?.blockReason?.let { throw PromptBlockedException(this) }
   candidates
-    ?.mapNotNull { it.finishReason }
-    ?.firstOrNull { it != FinishReason.STOP }
+    // ⚡ Bolt: Avoid intermediate list allocation from mapNotNull
+    ?.firstOrNull { it.finishReason != null && it.finishReason != FinishReason.STOP }
     ?.let { throw ResponseStoppedException(this) }
 }
