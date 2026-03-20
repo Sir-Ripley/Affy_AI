@@ -211,8 +211,8 @@ internal constructor(
     }
     promptFeedback?.blockReason?.let { throw PromptBlockedException(this) }
     candidates
-      // ⚡ Bolt: Avoid intermediate list allocation from mapNotNull
-      .firstOrNull { it.finishReason != null && it.finishReason != FinishReason.STOP }
+      .mapNotNull { it.finishReason }
+      .firstOrNull { it != FinishReason.STOP }
       ?.let { throw ResponseStoppedException(this) }
   }
 }
