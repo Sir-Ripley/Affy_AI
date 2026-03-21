@@ -271,7 +271,7 @@ private fun GenerateContentResponse.validate() = apply {
   }
   promptFeedback?.blockReason?.let { throw PromptBlockedException(this) }
   candidates
-    ?.mapNotNull { it.finishReason }
-    ?.firstOrNull { it != FinishReason.STOP }
+    // ⚡ Bolt: Avoid intermediate array creation by combining mapNotNull and firstOrNull
+    ?.firstOrNull { it.finishReason != null && it.finishReason != FinishReason.STOP }
     ?.let { throw ResponseStoppedException(this) }
 }
