@@ -211,8 +211,7 @@ internal constructor(
     }
     promptFeedback?.blockReason?.let { throw PromptBlockedException(this) }
     candidates
-      .mapNotNull { it.finishReason }
-      .firstOrNull { it != FinishReason.STOP }
+      .firstOrNull { it.finishReason != null && it.finishReason != FinishReason.STOP }
       ?.let { throw ResponseStoppedException(this) }
   }
 }
