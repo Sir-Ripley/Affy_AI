@@ -270,8 +270,9 @@ private fun GenerateContentResponse.validate() = apply {
     throw SerializationException("Error deserializing response, found no valid fields")
   }
   promptFeedback?.blockReason?.let { throw PromptBlockedException(this) }
+  // Bolt Optimization: replaced mapNotNull followed by firstOrNull with a single firstOrNull
+  // to avoid allocating an intermediate array
   candidates
-    ?.mapNotNull { it.finishReason }
-    ?.firstOrNull { it != FinishReason.STOP }
+    ?.firstOrNull { it.finishReason != null && it.finishReason != FinishReason.STOP }
     ?.let { throw ResponseStoppedException(this) }
 }
