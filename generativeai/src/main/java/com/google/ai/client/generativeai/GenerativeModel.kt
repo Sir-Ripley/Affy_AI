@@ -210,9 +210,9 @@ internal constructor(
       throw SerializationException("Error deserializing response, found no valid fields")
     }
     promptFeedback?.blockReason?.let { throw PromptBlockedException(this) }
+    // ⚡ Bolt: Avoid creating intermediate array from mapNotNull
     candidates
-      .mapNotNull { it.finishReason }
-      .firstOrNull { it != FinishReason.STOP }
+      .firstOrNull { it.finishReason != null && it.finishReason != FinishReason.STOP }
       ?.let { throw ResponseStoppedException(this) }
   }
 }
