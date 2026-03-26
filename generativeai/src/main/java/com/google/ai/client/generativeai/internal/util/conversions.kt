@@ -319,9 +319,14 @@ internal fun CountTokensResponse.toPublic() =
 internal fun JsonObject.toPublic() = JSONObject(toString())
 
 private fun encodeBitmapToBase64Png(input: Bitmap): String {
-  ByteArrayOutputStream().let {
-    input.compress(Bitmap.CompressFormat.JPEG, 80, it)
-    return Base64.encodeToString(it.toByteArray(), BASE_64_FLAGS)
+  // ⚡ Bolt: Pre-size the ByteArrayOutputStream to avoid multiple array reallocations.
+  // A JPEG at 80% quality is usually around 10-20% of the raw bitmap size.
+  // We use 25% (width * height) as a safe upper bound to minimize reallocations
+  // without allocating excessively large buffers for typical images.
+  val capacity = input.width * input.height
+  ByteArrayOutputStream(capacity).use { outputStream ->
+    input.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+    return Base64.encodeToString(outputStream.toByteArray(), BASE_64_FLAGS)
   }
 }
 
