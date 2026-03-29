@@ -319,7 +319,9 @@ internal fun CountTokensResponse.toPublic() =
 internal fun JsonObject.toPublic() = JSONObject(toString())
 
 private fun encodeBitmapToBase64Png(input: Bitmap): String {
-  ByteArrayOutputStream().let {
+  // ⚡ Bolt: Pre-size the ByteArrayOutputStream to avoid reallocations.
+  // A rough estimate for JPEG is width * height / 4 bytes.
+  ByteArrayOutputStream(input.width * input.height / 4).use {
     input.compress(Bitmap.CompressFormat.JPEG, 80, it)
     return Base64.encodeToString(it.toByteArray(), BASE_64_FLAGS)
   }
