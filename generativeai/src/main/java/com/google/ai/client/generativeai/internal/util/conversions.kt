@@ -19,6 +19,7 @@ package com.google.ai.client.generativeai.internal.util
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
+import android.util.Base64OutputStream
 import com.google.ai.client.generativeai.common.CountTokensResponse
 import com.google.ai.client.generativeai.common.GenerateContentResponse
 import com.google.ai.client.generativeai.common.RequestOptions
@@ -319,9 +320,14 @@ internal fun CountTokensResponse.toPublic() =
 internal fun JsonObject.toPublic() = JSONObject(toString())
 
 private fun encodeBitmapToBase64Png(input: Bitmap): String {
-  ByteArrayOutputStream().let {
-    input.compress(Bitmap.CompressFormat.JPEG, 80, it)
-    return Base64.encodeToString(it.toByteArray(), BASE_64_FLAGS)
+  // ⚡ Bolt: Pre-size the ByteArrayOutputStream to avoid reallocations, and use
+  // Base64OutputStream to avoid an intermediate ByteArray copy.
+  val estimatedSize = input.width * input.height / 4
+  ByteArrayOutputStream(estimatedSize).use { os ->
+    Base64OutputStream(os, BASE_64_FLAGS).use { base64os ->
+      input.compress(Bitmap.CompressFormat.JPEG, 80, base64os)
+    }
+    return os.toString("UTF-8")
   }
 }
 
