@@ -319,7 +319,7 @@ internal fun CountTokensResponse.toPublic() =
 
 internal fun JsonObject.toPublic() = JSONObject(toString())
 
-private fun encodeBitmapToBase64Png(input: Bitmap): String {
+private fun encodeBitmapToBase64Jpeg(input: Bitmap): String {
   // ⚡ Bolt: Pre-size the ByteArrayOutputStream to avoid reallocations, and use
   // Base64OutputStream to avoid an intermediate ByteArray copy.
   val estimatedSize = input.width * input.height / 4
