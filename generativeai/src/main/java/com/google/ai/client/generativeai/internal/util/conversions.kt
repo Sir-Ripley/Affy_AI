@@ -322,7 +322,7 @@ internal fun JsonObject.toPublic() = JSONObject(toString())
 private fun encodeBitmapToBase64Jpeg(input: Bitmap): String {
   // ⚡ Bolt: Pre-size the ByteArrayOutputStream to avoid reallocations, and use
   // Base64OutputStream to avoid an intermediate ByteArray copy.
-  val estimatedSize = input.width * input.height / 4
+  val estimatedSize = input.byteCount / 2
   ByteArrayOutputStream(estimatedSize).use { os ->
     Base64OutputStream(os, BASE_64_FLAGS).use { base64os ->
       input.compress(Bitmap.CompressFormat.JPEG, 80, base64os)
