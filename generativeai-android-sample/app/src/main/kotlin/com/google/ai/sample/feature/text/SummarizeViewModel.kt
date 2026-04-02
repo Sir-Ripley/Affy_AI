@@ -58,11 +58,11 @@ class SummarizeViewModel(
 
         viewModelScope.launch {
             try {
-                var outputContent = ""
+                val outputContent = StringBuilder()
                 generativeModel.generateContentStream(prompt)
                     .collect { response ->
-                        outputContent += response.text
-                        _uiState.value = SummarizeUiState.Success(outputContent)
+                        outputContent.append(response.text)
+                        _uiState.value = SummarizeUiState.Success(outputContent.toString())
                     }
             } catch (e: Exception) {
                 _uiState.value = SummarizeUiState.Error(e.localizedMessage ?: "")
