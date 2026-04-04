@@ -52,12 +52,13 @@ class PhotoReasoningViewModel(
                     text(prompt)
                 }
 
-                var outputContent = ""
+                // ⚡ Bolt: Use StringBuilder to prevent O(N^2) memory allocations when accumulating chunked text responses from streaming APIs
+                val outputContent = StringBuilder()
 
                 generativeModel.generateContentStream(inputContent)
                     .collect { response ->
-                        outputContent += response.text
-                        _uiState.value = PhotoReasoningUiState.Success(outputContent)
+                        outputContent.append(response.text)
+                        _uiState.value = PhotoReasoningUiState.Success(outputContent.toString())
                     }
             } catch (e: Exception) {
                 _uiState.value = PhotoReasoningUiState.Error(e.localizedMessage ?: "")
