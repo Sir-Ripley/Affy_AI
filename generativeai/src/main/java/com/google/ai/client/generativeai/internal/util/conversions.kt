@@ -77,7 +77,7 @@ internal fun com.google.ai.client.generativeai.type.Content.toInternal() =
 internal fun com.google.ai.client.generativeai.type.Part.toInternal(): Part {
   return when (this) {
     is com.google.ai.client.generativeai.type.TextPart -> TextPart(text)
-    is ImagePart -> BlobPart(Blob("image/jpeg", encodeBitmapToBase64Png(image)))
+    is ImagePart -> BlobPart(Blob("image/jpeg", encodeBitmapToBase64Jpeg(image)))
     is com.google.ai.client.generativeai.type.BlobPart ->
       BlobPart(Blob(mimeType, Base64.encodeToString(blob, BASE_64_FLAGS)))
     is com.google.ai.client.generativeai.type.FunctionCallPart ->
