@@ -52,12 +52,12 @@ class PhotoReasoningViewModel(
                     text(prompt)
                 }
 
-                var outputContent = ""
+                val outputContent = StringBuilder()
 
                 generativeModel.generateContentStream(inputContent)
                     .collect { response ->
-                        outputContent += response.text
-                        _uiState.value = PhotoReasoningUiState.Success(outputContent)
+                        outputContent.append(response.text)
+                        _uiState.value = PhotoReasoningUiState.Success(outputContent.toString())
                     }
             } catch (e: Exception) {
                 _uiState.value = PhotoReasoningUiState.Error(e.localizedMessage ?: "")
