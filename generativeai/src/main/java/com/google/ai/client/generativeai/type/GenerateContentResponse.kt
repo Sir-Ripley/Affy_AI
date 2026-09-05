@@ -32,19 +32,29 @@ class GenerateContentResponse(
 ) {
   /** Convenience field representing all the text parts in the response, if they exists. */
   val text: String? by lazy {
-    candidates
-      .first()
-      .content
-      .parts
-      .filter { it is TextPart || it is ExecutableCodePart || it is CodeExecutionResultPart }
-      .joinToString(" ") {
-        when (it) {
-          is TextPart -> it.text
-          is ExecutableCodePart -> "\n```${it.language.lowercase()}\n${it.code}\n```"
-          is CodeExecutionResultPart -> "\n```\n${it.output}\n```"
-          else -> throw RuntimeException("unreachable")
+    val candidate = candidates.first()
+    val parts = candidate.content.parts
+
+    // ⚡ Bolt: Using buildString and iterating manually to avoid intermediate list allocation from
+    // filter
+    buildString {
+      var isFirst = true
+      for (part in parts) {
+        val partText =
+          when (part) {
+            is TextPart -> part.text
+            is ExecutableCodePart -> "\n```${part.language.lowercase()}\n${part.code}\n```"
+            is CodeExecutionResultPart -> "\n```\n${part.output}\n```"
+            else -> continue
+          }
+
+        if (!isFirst) {
+          append(" ")
         }
+        append(partText)
+        isFirst = false
       }
+    }
   }
 
   /** Convenience field representing the first function call part in the request, if it exists */
