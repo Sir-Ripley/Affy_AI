@@ -37,12 +37,25 @@ import kotlinx.serialization.encoding.Encoder
 class FirstOrdinalSerializer<T : Enum<T>>(private val enumClass: KClass<T>) : KSerializer<T> {
   override val descriptor: SerialDescriptor = buildClassSerialDescriptor("FirstOrdinalSerializer")
 
+  private val cachedValues = enumClass.enumValues()
+  private val nameToValue: Map<String, T>
+
+  init {
+    val map = mutableMapOf<String, T>()
+    for (i in cachedValues.indices) {
+      val value = cachedValues[i]
+      val name = value.serialName
+      if (!map.containsKey(name)) {
+        map[name] = value
+      }
+    }
+    nameToValue = map
+  }
+
   override fun deserialize(decoder: Decoder): T {
     val name = decoder.decodeString()
-    val values = enumClass.enumValues()
 
-    return values.firstOrNull { it.serialName == name }
-      ?: values.first().also { printWarning(name) }
+    return nameToValue[name] ?: cachedValues.first().also { printWarning(name) }
   }
 
   private fun printWarning(name: String) {
