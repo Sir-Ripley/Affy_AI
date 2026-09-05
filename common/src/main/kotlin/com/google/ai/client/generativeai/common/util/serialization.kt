@@ -37,12 +37,37 @@ import kotlinx.serialization.encoding.Encoder
 class FirstOrdinalSerializer<T : Enum<T>>(private val enumClass: KClass<T>) : KSerializer<T> {
   override val descriptor: SerialDescriptor = buildClassSerialDescriptor("FirstOrdinalSerializer")
 
+  // ⚡ Bolt: Cache enum values to avoid reflection on every serialization/deserialization.
+  // Using lazy to avoid empty collections if serializer is instantiated before Enum class
+  // initialization.
+  private val cachedValues: Array<T> by lazy { enumClass.enumValues() }
+
+  // ⚡ Bolt: Cache string to enum mapping for O(1) lookups during deserialization.
+  private val nameToEnum: Map<String, T> by lazy {
+    val map = mutableMapOf<String, T>()
+    for (value in cachedValues) {
+      val key = value.serialName
+      // Use 'first-wins' logic to exactly mirror the original .firstOrNull() behavior
+      if (!map.containsKey(key)) {
+        map[key] = value
+      }
+    }
+    map
+  }
+
+  // ⚡ Bolt: Cache enum to string mapping for O(1) lookups during serialization.
+  private val enumToName: Map<T, String> by lazy {
+    val map = mutableMapOf<T, String>()
+    for (value in cachedValues) {
+      map[value] = value.serialName
+    }
+    map
+  }
+
   override fun deserialize(decoder: Decoder): T {
     val name = decoder.decodeString()
-    val values = enumClass.enumValues()
 
-    return values.firstOrNull { it.serialName == name }
-      ?: values.first().also { printWarning(name) }
+    return nameToEnum[name] ?: cachedValues.first().also { printWarning(name) }
   }
 
   private fun printWarning(name: String) {
@@ -60,7 +85,8 @@ class FirstOrdinalSerializer<T : Enum<T>>(private val enumClass: KClass<T>) : KS
   }
 
   override fun serialize(encoder: Encoder, value: T) {
-    encoder.encodeString(value.serialName)
+    // ⚡ Bolt: Use cached mapping to avoid reflection on every serialization
+    encoder.encodeString(enumToName[value] ?: value.serialName)
   }
 }
 
